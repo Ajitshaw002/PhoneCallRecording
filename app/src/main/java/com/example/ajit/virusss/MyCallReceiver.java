@@ -21,6 +21,7 @@ public class MyCallReceiver extends BroadcastReceiver {
     private static String savedNumber;
     String AudioSavePathInDevice = null;
     MediaRecorder mediaRecorder ;
+    boolean inServiceOn=true;
     Random random ;
     String RandomAudioFileName = "ABCDEFGHIJKLMNOP";
     public static final int RequestPermissionCode = 1;
@@ -61,6 +62,7 @@ public class MyCallReceiver extends BroadcastReceiver {
     public void onCallStateChanged(Context context, int state, String number) {
         if(lastState == state){
             //No change, debounce extras
+            context.stopService(new Intent(context, MyCallIntentService.class));
             return;
         }
         switch (state) {
@@ -68,24 +70,12 @@ public class MyCallReceiver extends BroadcastReceiver {
                 isIncoming = true;
                 callStartTime = new Date();
                 savedNumber = number;
+                lastState=TelephonyManager.CALL_STATE_RINGING;
 
                 Toast.makeText(context, "Incoming Call Ringing" , Toast.LENGTH_SHORT).show();
-                context.startService(new Intent(context, MyCallIntentService.class));
-//                AudioSavePathInDevice =
-//                        Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +
-//                                CreateRandomAudioFileName(5) + "AudioRecording.3gp";
-//
-//                MediaRecorderReady();
-//                try {
-//                    mediaRecorder.prepare();
-//                    mediaRecorder.start();
-//                } catch (IllegalStateException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                } catch (IOException e) {
-//                    // TODO Auto-generated catch block
-//                    e.printStackTrace();
-//                }
+
+                    context.startService(new Intent(context, MyCallIntentService.class));
+
                 break;
             case TelephonyManager.CALL_STATE_OFFHOOK:
                 //Transition of ringing->offhook are pickups of incoming calls.  Nothing done on them
@@ -100,22 +90,22 @@ public class MyCallReceiver extends BroadcastReceiver {
                 //Went to idle-  this is the end of a call.  What type depends on previous state(s)
                 if(lastState == TelephonyManager.CALL_STATE_RINGING){
                     //Ring but no pickup-  a miss
-                    Toast.makeText(context, "Ringing but no pickup" + savedNumber + " Call time " + callStartTime +" Date " + new Date() , Toast.LENGTH_SHORT).show();
+                   // Toast.makeText(context, "Ringing but no pickup" + savedNumber + " Call time " + callStartTime +" Date " + new Date() , Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "" + ("\ud83d\ude01"),Toast.LENGTH_LONG).show();
+                    context.stopService(new Intent(context, MyCallIntentService.class));
                 }
                 else if(isIncoming){
                     //mediaPlayer.stop();
                    // mediaRecorder.stop();
                     //Toast.makeText(context, "Incoming " + savedNumber + " Call time " + callStartTime  , Toast.LENGTH_SHORT).show();
-                    Toast.makeText(context, "Recording Completed",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "" + ("\ud83d\ude01"),Toast.LENGTH_LONG).show();
                     context.stopService(new Intent(context, MyCallIntentService.class));
                 }
                 else{
                     //mediaPlayer.stop();
                    // mediaRecorder.stop();
                     //Toast.makeText(context, "outgoing " + savedNumber + " Call time " + callStartTime +" Date " + new Date() , Toast.LENGTH_SHORT).show();
-                    Toast.makeText(context, "Recording Completed",
-                            Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "" + ("\ud83d\ude01"),Toast.LENGTH_LONG).show();
                     context.stopService(new Intent(context, MyCallIntentService.class));
                 }
 
@@ -124,22 +114,5 @@ public class MyCallReceiver extends BroadcastReceiver {
         lastState = state;
     }
 
-    public void MediaRecorderReady(){
-        mediaRecorder=new MediaRecorder();
-        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mediaRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
-        mediaRecorder.setOutputFile(AudioSavePathInDevice);
-    }
-    public String CreateRandomAudioFileName(int string){
-        StringBuilder stringBuilder = new StringBuilder( string );
-        int i = 0 ;
-        while(i < string ) {
-            stringBuilder.append(RandomAudioFileName.
-                    charAt(random.nextInt(RandomAudioFileName.length())));
 
-            i++ ;
-        }
-        return stringBuilder.toString();
-    }
 }

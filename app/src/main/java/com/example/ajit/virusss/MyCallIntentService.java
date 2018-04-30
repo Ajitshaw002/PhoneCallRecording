@@ -40,19 +40,22 @@ public void onCreate(){
 public int onStartCommand(Intent intent,int flags,
         int startId){
         super.onStartCommand(intent,flags,startId);
+        startRecording();
         return Service.START_STICKY;
         }
 
 @Override
 public void onStart(Intent intent,int startId){
         super.onStart(intent,startId);
-        startRecording();
+
         }
 @Nullable
 @Override
 public IBinder onBind(Intent intent){
         return null;
         }
+
+
 private void startRecording(){
         mRecorder=new MediaRecorder();
         mRecorder.setOnInfoListener(this);
